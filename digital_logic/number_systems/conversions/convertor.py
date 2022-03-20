@@ -1,4 +1,5 @@
 from collections import deque
+from curses.ascii import isalpha
 
 class NumberSystem:
   base: int = 0
@@ -43,7 +44,23 @@ class DecimalConvertor:
       base //=10
     
     return "".join(unicode)
+  
+  def convert_to_decimal_system(self, number: str, group_seperator: str, 
+                                decimal_part_length: int) -> str:
+    base = self.from_number_system.base
+    values = self.from_number_system.values
+    converted_number = 0
+    index = decimal_part_length
     
+    for token in number:
+      if token != group_seperator:
+        index -= 1
+        if not isalpha(token):
+          token = int(token)
+        
+        converted_number += (values[token] * (base ** index))
+    
+    return str(converted_number)
     
   def convert_decimal_part_to_new_base(self, number: int) -> str:
     if number == 0:
@@ -79,6 +96,7 @@ class DecimalConvertor:
   def convert(self, from_number_system: NumberSystem, to_number_system: NumberSystem, number: str) -> str:
     group_seperator = "."
     self.to_number_system = to_number_system
+    self.from_number_system = from_number_system
     decimal_part, *fractional_part = number.split(group_seperator)
     fractional_part = "".join(fractional_part)
     
@@ -86,11 +104,12 @@ class DecimalConvertor:
       decimal_part = self.convert_decimal_part_to_new_base(int(decimal_part))
       
       if fractional_part:
-        fractional_part = self.convert_fractional_part_to_new_base(float(f"0.{fractional_part}"), group_seperator)    
+        fractional_part = self.convert_fractional_part_to_new_base(float(f"0.{fractional_part}"), group_seperator)
+      converted_number = f"{decimal_part}{fractional_part}"     
     else:
-      pass
+      converted_number = self.convert_to_decimal_system(number, group_seperator, len(decimal_part))
     
-    return bytes(f"({decimal_part}{fractional_part}){self._get_unicode_for_base(to_number_system.base)}", "utf-8").decode("unicode-escape")
+    return bytes(f"({converted_number}){self._get_unicode_for_base(to_number_system.base)}", "utf-8").decode("unicode-escape")
       
 
 class Convertor:
@@ -115,4 +134,4 @@ class Convertor:
     return decimal.convert(current_system, conversion_system, number)
 
 
-print(Convertor().convert("decimal", "hexadecimal", "18.675"))
+print(Convertor().convert("octal", "decimal", "1023.06"))
