@@ -1,5 +1,8 @@
 from collections import deque
 from curses.ascii import isalpha
+import re
+
+FORMAT_PATTERN = re.compile(r'\((.*?)\).*')
 
 class NumberSystem:
   base: int = 0
@@ -81,7 +84,7 @@ class DecimalConvertor:
     
     base = self.to_number_system.base
     values = self.to_number_system.values
-    count = 4
+    count = 10
     while number != 0 and count:
       count -= 1
       temp = number * base
@@ -129,9 +132,14 @@ class Convertor:
   def convert(self, from_number_system: str, to_number_system: str, number: str) -> str:
     current_system = self.get_number_system(from_number_system)
     conversion_system = self.get_number_system(to_number_system)
-      
-    decimal = DecimalConvertor()
-    return decimal.convert(current_system, conversion_system, number)
+    
+    convertor = DecimalConvertor()
+    if from_number_system != "decimal" and to_number_system != "decimal":
+      decimal_system = self.get_number_system("decimal")  
+      number = FORMAT_PATTERN.findall(convertor.convert(current_system, decimal_system, number))[0]
+      current_system = decimal_system
+    
+    return convertor.convert(current_system, conversion_system, number)
 
 
-print(Convertor().convert("octal", "decimal", "1023.06"))
+print(Convertor().convert("hexadecimal", "octal", "C3AF"))
