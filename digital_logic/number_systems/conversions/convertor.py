@@ -58,10 +58,9 @@ class DecimalConvertor:
     for token in number:
       if token != group_seperator:
         index -= 1
-        if not isalpha(token):
-          token = int(token)
-        
-        converted_number += (values[token] * (base ** index))
+        if isalpha(token):
+          token = int(values[token])
+        converted_number += (int(token) * (base ** index))
     
     return str(converted_number)
     
@@ -138,8 +137,4 @@ class Convertor:
       decimal_system = self.get_number_system("decimal")  
       number = FORMAT_PATTERN.findall(convertor.convert(current_system, decimal_system, number))[0]
       current_system = decimal_system
-    
     return convertor.convert(current_system, conversion_system, number)
-
-
-print(Convertor().convert("hexadecimal", "octal", "C3AF"))
